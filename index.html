@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Специален въпрос 💌</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:    #c0586a;
+      --blush:   #f9e8ed;
+      --cream:   #fdf6f0;
+      --dark:    #2c1a22;
+      --muted:   #8a6472;
+      --gold:    #d4a060;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Lato', sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* ── Petals ── */
+    .petal {
+      position: fixed;
+      top: -40px;
+      font-size: 1.4rem;
+      animation: fall linear infinite;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.7;
+    }
+    @keyframes fall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: .8; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* ── Pages ── */
+    .page {
+      display: none;
+      min-height: 100vh;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+    .page.active { display: flex; }
+
+    /* ── Typography ── */
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      line-height: 1.25;
+      color: var(--dark);
+      margin-bottom: 2rem;
+    }
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.3rem, 4vw, 2rem);
+      margin-bottom: 1.8rem;
+      color: var(--dark);
+    }
+    .sub {
+      font-size: .95rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(192,88,106,.12);
+    }
+
+    /* ── Heart divider ── */
+    .divider {
+      color: var(--rose);
+      font-size: 1.2rem;
+      margin: 1rem 0 1.5rem;
+      letter-spacing: .4rem;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-block;
+      padding: .85rem 2.4rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      transition: transform .15s, box-shadow .15s;
+      font-family: 'Lato', sans-serif;
+      font-weight: 400;
+    }
+    .btn:hover { transform: scale(1.04); }
+
+    .btn-yes {
+      background: var(--rose);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(192,88,106,.35);
+    }
+    .btn-yes:hover { box-shadow: 0 6px 24px rgba(192,88,106,.5); }
+
+    .btn-no {
+      background: #fff;
+      color: var(--muted);
+      border: 1.5px solid #e0c8ce;
+      position: absolute;   /* escape layout so it can be moved freely */
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 1.2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+      min-height: 60px;
+      margin-top: .5rem;
+    }
+
+    /* ── Cuisine grid ── */
+    .cuisine-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: .9rem;
+      margin-bottom: 1.5rem;
+    }
+    .cuisine-btn {
+      background: var(--blush);
+      color: var(--dark);
+      border: 2px solid transparent;
+      border-radius: 14px;
+      padding: .85rem .5rem;
+      cursor: pointer;
+      font-family: 'Playfair Display', serif;
+      font-size: .95rem;
+      transition: all .18s;
+    }
+    .cuisine-btn:hover, .cuisine-btn.selected {
+      background: var(--rose);
+      color: #fff;
+      border-color: var(--rose);
+    }
+    .cuisine-emoji { display: block; font-size: 1.8rem; margin-bottom: .3rem; }
+
+    /* ── Datetime inputs ── */
+    .dt-group { margin-bottom: 1.2rem; text-align: left; }
+    .dt-group label {
+      display: block;
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: .35rem;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .dt-group input {
+      width: 100%;
+      padding: .75rem 1rem;
+      border: 1.5px solid #e0c8ce;
+      border-radius: 10px;
+      font-family: 'Lato', sans-serif;
+      font-size: 1rem;
+      color: var(--dark);
+      background: #fff;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .dt-group input:focus { border-color: var(--rose); }
+
+    .btn-submit {
+      background: var(--rose);
+      color: #fff;
+      width: 100%;
+      padding: 1rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      margin-top: .5rem;
+      transition: opacity .15s, transform .15s;
+    }
+    .btn-submit:hover { opacity: .9; transform: scale(1.02); }
+    .btn-submit:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    .err { color: var(--rose); font-size: .85rem; margin-top: .6rem; min-height: 1.2em; }
+
+    /* ── Thank you page ── */
+    .heart-big {
+      font-size: 5rem;
+      animation: heartbeat 1.4s ease-in-out infinite;
+      display: block;
+      margin-bottom: 1rem;
+    }
+    @keyframes heartbeat {
+      0%,100% { transform: scale(1); }
+      14%      { transform: scale(1.18); }
+      28%      { transform: scale(1); }
+      42%      { transform: scale(1.12); }
+      70%      { transform: scale(1); }
+    }
+    .thank-detail {
+      font-size: .95rem;
+      color: var(--muted);
+      margin-top: 1.2rem;
+      line-height: 1.7;
+    }
+    .thank-detail strong { color: var(--rose); font-weight: 400; }
+
+    /* ── Sparkles on yes ── */
+    .sparkle-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Falling petals -->
+<div id="petals"></div>
+
+<!-- ══════════ PAGE 1 – The question ══════════ -->
+<div class="page active" id="page1">
+  <div class="card">
+    <div style="font-size:2.2rem;margin-bottom:.8rem">💌</div>
+    <h1>Искаш ли да излезеш на среща с мен?</h1>
+    <div class="divider">❧ ❧ ❧</div>
+    <p class="sub">Отговорът ти е много важен за мен…</p>
+    <div class="btn-row" id="btnRow">
+      <button class="btn btn-yes" onclick="goYes()">Да 💕</button>
+      <button class="btn btn-no" id="btnNo" onmouseover="moveNo()" ontouchstart="moveNo()">Не</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PAGE 2 – Cuisine ══════════ -->
+<div class="page" id="page2">
+  <div class="card">
+    <div style="font-size:2rem;margin-bottom:.8rem">🍽️</div>
+    <h2>Каква кухня предпочиташ?</h2>
+    <p class="sub">Ще резервирам точното за нас място</p>
+    <div class="cuisine-grid">
+      <button class="cuisine-btn" onclick="selectCuisine(this,'Италианска')">
+        <span class="cuisine-emoji">🍝</span>Италианска
+      </button>
+      <button class="cuisine-btn" onclick="selectCuisine(this,'Азиатска')">
+        <span class="cuisine-emoji">🍜</span>Азиатска
+      </button>
+      <button class="cuisine-btn" onclick="selectCuisine(this,'Турска')">
+        <span class="cuisine-emoji">🥙</span>Турска
+      </button>
+      <button class="cuisine-btn" onclick="selectCuisine(this,'Българска')">
+        <span class="cuisine-emoji">🥗</span>Българска
+      </button>
+      <button class="cuisine-btn" onclick="selectCuisine(this,'Френска')">
+        <span class="cuisine-emoji">🥐</span>Френска
+      </button>
+    </div>
+    <button class="btn btn-yes" id="cuisineNext" onclick="showPage3()" style="opacity:.4;pointer-events:none;width:100%">Напред →</button>
+  </div>
+</div>
+
+<!-- ══════════ PAGE 3 – Date & Time ══════════ -->
+<div class="page" id="page3">
+  <div class="card">
+    <div style="font-size:2rem;margin-bottom:.8rem">📅</div>
+    <h2>Кога да е нашата среща?</h2>
+    <p class="sub">Избери дата и час — ще бъда там</p>
+
+    <div class="dt-group">
+      <label>Дата</label>
+      <input type="date" id="dateInput" min="" />
+    </div>
+    <div class="dt-group">
+      <label>Час</label>
+      <input type="time" id="timeInput" value="19:00" />
+    </div>
+
+    <div class="err" id="dtErr"></div>
+    <button class="btn-submit" id="submitBtn" onclick="submitDate()">Потвърди срещата 💌</button>
+  </div>
+</div>
+
+<!-- ══════════ PAGE 4 – Thank you ══════════ -->
+<div class="page" id="page4">
+  <div class="card">
+    <span class="heart-big">❤️</span>
+    <h2>Не мога да дочакам!</h2>
+    <div class="divider">✦ ✦ ✦</div>
+    <p class="sub">Благодаря ти, че се съгласи…</p>
+    <p class="thank-detail" id="thankDetail"></p>
+    <p class="thank-detail" style="margin-top:1rem">
+      Ще бъда <strong>точно навреме</strong>,<br>
+      с усмивка и може би с цветя 🌹
+    </p>
+  </div>
+</div>
+
+<canvas class="sparkle-canvas" id="sparkles"></canvas>
+
+<script>
+  /* ── Смени с твоя имейл ── */
+  const YOUR_EMAIL = "YOUR_EMAIL@gmail.com";
+
+  let chosenCuisine = "";
+
+  /* ── Petals ── */
+  const petalDiv = document.getElementById("petals");
+  const emojis = ["🌸","🌺","🌹","💗","🌷","✿","❀"];
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement("div");
+    p.className = "petal";
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.animationDuration = (5 + Math.random() * 8) + "s";
+    p.style.animationDelay    = (Math.random() * 8) + "s";
+    p.style.fontSize = (.9 + Math.random() * .8) + "rem";
+    petalDiv.appendChild(p);
+  }
+
+  /* ── Set min date to today ── */
+  const todayStr = new Date().toISOString().split("T")[0];
+  document.getElementById("dateInput").min = todayStr;
+  document.getElementById("dateInput").value = todayStr;
+
+  /* ── Move "No" button ── */
+  let noMoves = 0;
+  function moveNo() {
+    noMoves++;
+    const btn   = document.getElementById("btnNo");
+    const row   = document.getElementById("btnRow");
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const bW = btn.offsetWidth;
+    const bH = btn.offsetHeight;
+
+    // Random position anywhere in viewport
+    const x = Math.random() * (W - bW);
+    const y = Math.random() * (H - bH);
+    btn.style.left   = x + "px";
+    btn.style.top    = y + "px";
+    btn.style.right  = "auto";
+    btn.style.bottom = "auto";
+    btn.style.position = "fixed";
+
+    if (noMoves > 4) {
+      btn.style.display = "none"; // give up and hide it :)
+    }
+  }
+
+  /* ── Pages ── */
+  function showPage(id) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function goYes() {
+    launchSparkles();
+    setTimeout(() => showPage("page2"), 600);
+  }
+
+  function selectCuisine(el, name) {
+    document.querySelectorAll(".cuisine-btn").forEach(b => b.classList.remove("selected"));
+    el.classList.add("selected");
+    chosenCuisine = name;
+    const next = document.getElementById("cuisineNext");
+    next.style.opacity = "1";
+    next.style.pointerEvents = "auto";
+  }
+
+  function showPage3() {
+    if (!chosenCuisine) return;
+    showPage("page3");
+  }
+
+  /* ── Submit ── */
+  async function submitDate() {
+    const dateVal   = document.getElementById("dateInput").value;
+    const timeVal   = document.getElementById("timeInput").value;
+    const errEl     = document.getElementById("dtErr");
+    const submitBtn = document.getElementById("submitBtn");
+
+    errEl.textContent = "";
+    if (!dateVal) { errEl.textContent = "Моля, избери дата."; return; }
+    if (!timeVal) { errEl.textContent = "Моля, избери час."; return; }
+
+    const dateObj     = new Date(dateVal + "T" + timeVal);
+    const formatted   = dateObj.toLocaleDateString("bg-BG", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric"
+    });
+
+    // Build mailto
+    const subject = encodeURIComponent("💌 Отговор на поканата за среща");
+    const body    = encodeURIComponent(
+      `Здравей! 😊\n\nПриех поканата за среща!\n\n` +
+      `🍽️ Кухня: ${chosenCuisine}\n` +
+      `📅 Дата: ${formatted}\n` +
+      `🕐 Час: ${timeVal}\n` +
+      `\nНе мога да дочакам! ❤️`
+    );
+
+    document.getElementById("thankDetail").innerHTML =
+      `<strong>${chosenCuisine} кухня</strong> &bull; <strong>${formatted}</strong> &bull; <strong>${timeVal}</strong>`;
+
+    launchSparkles();
+    setTimeout(() => showPage("page4"), 400);
+
+    // Open mail client
+    window.location.href = `mailto:${YOUR_EMAIL}?subject=${subject}&body=${body}`;
+  }
+
+  /* ── Sparkles canvas ── */
+  function launchSparkles() {
+    const canvas = document.getElementById("sparkles");
+    const ctx    = canvas.getContext("2d");
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    for (let i = 0; i < 120; i++) {
+      particles.push({
+        x: canvas.width  / 2,
+        y: canvas.height / 2,
+        vx: (Math.random() - .5) * 12,
+        vy: (Math.random() - .5) * 12 - 4,
+        alpha: 1,
+        color: ["#c0586a","#f9c8d4","#d4a060","#fff","#f3b8c5"][Math.floor(Math.random()*5)],
+        r: 2 + Math.random() * 4
+      });
+    }
+
+    let frame;
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += .25;
+        p.alpha -= .018;
+        if (p.alpha < 0) p.alpha = 0;
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle   = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      if (particles.some(p => p.alpha > 0)) {
+        frame = requestAnimationFrame(draw);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+    cancelAnimationFrame(frame);
+    draw();
+  }
+</script>
+</body>
+</html>
